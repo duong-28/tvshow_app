@@ -1,115 +1,124 @@
-import { useState, useEffect } from 'react'
+import { useInfiniteQuery } from '@tanstack/react-query'
+import { useRef, useEffect, useState } from 'react'
 import { Show } from '../types/show'
 import { getShows, searchShows } from '../services/api'
 import { ShowCard } from './ShowCard'
 import { SearchBar } from './SearchBar'
 
 export const ShowList = () => {
-    // State to store our shows
-    const [shows, setShows] = useState<Show[]>([])
-    // State to handle loading
-    const [loading, setLoading] = useState(true)
-    // State to handle errors
-    const [error, setError] = useState<string | null>(null)
-    const [page, setPage] = useState(0)
     const [isSearching, setIsSearching] = useState(false)
-    const [cachedShows, setCachedShows] = useState<Show[]>([])
+    const [searchResults, setSearchResults] = useState<Show[]>([])
+    const [displayedShowsCount, setDisplayedShowsCount] = useState(25)
+    const observerRef = useRef<HTMLDivElement>(null)
 
-    const fetchShows = async (pageNum: number) => {
-        try {
-            setLoading(true)
-            const data = await getShows(pageNum)
-            const newShows = pageNum === 0 ? data : [...shows, ...data]
-            setShows(newShows)
-            if (pageNum === 0) {
-                setCachedShows(data)
+    const {
+        data,
+        fetchNextPage,
+        hasNextPage,
+        isFetchingNextPage,
+        isLoading,
+        error,
+    } = useInfiniteQuery({
+        queryKey: ['shows'],
+        queryFn: ({ pageParam = 0 }) => getShows(pageParam),
+        getNextPageParam: (lastPage, allPages) => {
+            if (lastPage.length === 0) return undefined
+            return allPages.length
+        },
+        enabled: !isSearching,
+        initialPageParam: 0
+    })
+
+    useEffect(() => {
+        if (!observerRef.current || isFetchingNextPage || isSearching) return
+
+        const observer = new IntersectionObserver(
+            (entries) => {
+                if (entries[0].isIntersecting) {
+                    if (allShows.length > displayedShowsCount) {
+                        // Show 25 more shows if we have them cached
+                        setDisplayedShowsCount(prev => prev + 25)
+                    } else if (hasNextPage) {
+                        // Fetch next page if we need more shows
+                        fetchNextPage()
+                    }
+                }
+            },
+            { 
+                threshold: 0.5,
+                rootMargin: '100px'
             }
-        } catch (err) {
-            setError('Failed to load shows')
-            console.error(err)
-        } finally {
-            setLoading(false)
-        }
-    }
+        )
+
+        observer.observe(observerRef.current)
+        return () => observer.disconnect()
+    }, [hasNextPage, isFetchingNextPage, fetchNextPage, isSearching, data, displayedShowsCount])
 
     const handleSearch = async (query: string) => {
         if (!query.trim()) {
             setIsSearching(false)
-            setShows(cachedShows)
+            setSearchResults([])
+            setDisplayedShowsCount(25) // Reset display count when clearing search
             return
         }
 
         try {
-            setLoading(true)
             setIsSearching(true)
             const results = await searchShows(query)
-            setShows(results.map(result => result.show))
+            setSearchResults(results.map(result => result.show))
         } catch (err) {
-            setError('Failed to search shows')
-            console.error(err)
-        } finally {
-            setLoading(false)
+            console.error('Failed to search shows:', err)
         }
     }
 
-    const loadMore = () => {
-        if (!isSearching && !loading) {
-            setPage(prev => prev + 1)
-        }
-    }
+    const allShows = data?.pages?.flatMap(page => page) ?? []
+    const displayedShows = isSearching 
+        ? searchResults 
+        : allShows.slice(0, displayedShowsCount)
 
-    useEffect(() => {
-        if (!isSearching) {
-            fetchShows(page)
-        }
-    }, [page])
-
-    if (loading) {
-        return <div className="text-center py-4">Loading...</div>
-    }
-
-    if (error) {
-        return <div className="text-center text-red-500 py-4">{error}</div>
-    }
+    const LoadingIndicator = () => (
+        <div className="text-center py-8 mt-4">
+            <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-blue-500 border-r-transparent"></div>
+            <p className="text-gray-600 mt-2">Loading more TV shows...</p>
+        </div>
+    )
 
     return (
-        <div>
+        <div className="container mx-auto px-4 py-8">
             <SearchBar onSearch={handleSearch} />
-            
-            {error && (
-                <div className="text-center text-red-500 py-4">{error}</div>
+
+            {error instanceof Error && (
+                <div className="text-center text-red-500 py-4">{error.message}</div>
             )}
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {shows.map(show => (
-                    <ShowCard key={show.id} show={show} />
-                ))}
-            </div>
-
-            {loading && (
+            {isLoading && !isSearching ? (
                 <div className="text-center py-8">
                     <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-blue-500 border-r-transparent"></div>
+                    <p className="text-gray-600 mt-2">Loading shows...</p>
                 </div>
-            )}
+            ) : (
+                <>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {displayedShows.map((show: Show) => (
+                            <ShowCard key={show.id} show={show} />
+                        ))}
+                    </div>
+                    
+                    {/* Loading indicator shown when actively loading more or when we have more to display */}
+                    {!isSearching && (isFetchingNextPage || (hasNextPage && allShows.length > 0)) && (
+                        <LoadingIndicator />
+                    )}
+                    
+                    <div ref={observerRef} className="h-4" />
 
-            {!loading && !isSearching && shows.length > 0 && (
-                <div className="text-center mt-8">
-                    <button
-                        onClick={loadMore}
-                        disabled={loading}
-                        className={`px-6 py-2 rounded-lg transition-colors ${
-                            loading ? 'bg-gray-400 cursor-not-allowed' : 'bg-blue-500 hover:bg-blue-600 text-white'
-                        }`}
-                    >
-                        {loading ? "Loading..." : "Load More Shows"}
-                    </button>
-                </div>
-            )}
-
-            {!loading && shows.length === 0 && (
-                <div className="text-center py-8 text-gray-500">
-                    {isSearching ? 'No shows found for your search' : 'No shows available'}
-                </div>
+                    {!isLoading && displayedShows.length === 0 && (
+                        <div className="text-center py-4">
+                            <p className="text-gray-600">
+                                {isSearching ? 'No shows found for your search' : 'No shows available'}
+                            </p>
+                        </div>
+                    )}
+                </>
             )}
         </div>
     )

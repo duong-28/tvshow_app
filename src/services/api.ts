@@ -5,7 +5,7 @@ const BASE_URL = 'https://api.tvmaze.com'
 
 const apiClient = axios.create({
     baseURL: BASE_URL,
-    timeout: 5000, // Prevents long waits
+    timeout: 5000,
     headers: { 'Content-Type': 'application/json' }
 })
 
