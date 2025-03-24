@@ -9,6 +9,7 @@ export const ShowList = () => {
     const [isSearching, setIsSearching] = useState(false)
     const [searchResults, setSearchResults] = useState<Show[]>([])
     const [displayedShowsCount, setDisplayedShowsCount] = useState(25)
+    const [isLoadingMore, setIsLoadingMore] = useState(false)
     const observerRef = useRef<HTMLDivElement>(null)
 
     const {
@@ -29,36 +30,50 @@ export const ShowList = () => {
         initialPageParam: 0
     })
 
+    const allShows = data?.pages?.flatMap(page => page) ?? []
+    const displayedShows = isSearching 
+        ? searchResults 
+        : allShows.slice(0, displayedShowsCount)
+
+    // Handle local pagination
+    const handleLoadMore = () => {
+        setIsLoadingMore(true)
+        setTimeout(() => {
+            setDisplayedShowsCount(prev => prev + 25)
+            setIsLoadingMore(false)
+        }, 500) // Small delay to show loading state
+    }
+
     useEffect(() => {
-        if (!observerRef.current || isFetchingNextPage || isSearching) return
+        if (!observerRef.current || isSearching) return
 
         const observer = new IntersectionObserver(
             (entries) => {
                 if (entries[0].isIntersecting) {
                     if (allShows.length > displayedShowsCount) {
-                        // Show 25 more shows if we have them cached
-                        setDisplayedShowsCount(prev => prev + 25)
-                    } else if (hasNextPage) {
-                        // Fetch next page if we need more shows
+                        // Handle local pagination
+                        handleLoadMore()
+                    } else if (hasNextPage && !isFetchingNextPage) {
+                        // Fetch new data from API
                         fetchNextPage()
                     }
                 }
             },
             { 
-                threshold: 0.5,
-                rootMargin: '100px'
+                threshold: 0.1, // Reduced threshold to trigger earlier
+                rootMargin: '200px' // Increased margin to load earlier
             }
         )
 
         observer.observe(observerRef.current)
         return () => observer.disconnect()
-    }, [hasNextPage, isFetchingNextPage, fetchNextPage, isSearching, data, displayedShowsCount])
+    }, [hasNextPage, isFetchingNextPage, fetchNextPage, isSearching, allShows.length, displayedShowsCount])
 
     const handleSearch = async (query: string) => {
         if (!query.trim()) {
             setIsSearching(false)
             setSearchResults([])
-            setDisplayedShowsCount(25) // Reset display count when clearing search
+            setDisplayedShowsCount(25)
             return
         }
 
@@ -71,16 +86,17 @@ export const ShowList = () => {
         }
     }
 
-    const allShows = data?.pages?.flatMap(page => page) ?? []
-    const displayedShows = isSearching 
-        ? searchResults 
-        : allShows.slice(0, displayedShowsCount)
-
     const LoadingIndicator = () => (
         <div className="text-center py-8 mt-4">
             <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-blue-500 border-r-transparent"></div>
             <p className="text-gray-600 mt-2">Loading more TV shows...</p>
         </div>
+    )
+
+    const shouldShowLoadingIndicator = !isSearching && (
+        isFetchingNextPage || 
+        isLoadingMore || 
+        (hasNextPage && allShows.length > 0)
     )
 
     return (
@@ -104,10 +120,7 @@ export const ShowList = () => {
                         ))}
                     </div>
                     
-                    {/* Loading indicator shown when actively loading more or when we have more to display */}
-                    {!isSearching && (isFetchingNextPage || (hasNextPage && allShows.length > 0)) && (
-                        <LoadingIndicator />
-                    )}
+                    {shouldShowLoadingIndicator && <LoadingIndicator />}
                     
                     <div ref={observerRef} className="h-4" />
 
