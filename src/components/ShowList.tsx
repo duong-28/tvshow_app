@@ -2,15 +2,42 @@ import { useInfiniteQuery } from '@tanstack/react-query'
 import { useRef, useEffect, useState } from 'react'
 import { Show } from '../types/show'
 import { getShows, searchShows } from '../services/api'
-import { ShowCard } from './ShowCard'
-import { SearchBar } from './SearchBar'
 
-export const ShowList = () => {
+interface ShowListProps {
+    searchQuery: string;
+}
+
+export const ShowList = ({ searchQuery }: ShowListProps) => {
     const [isSearching, setIsSearching] = useState(false)
     const [searchResults, setSearchResults] = useState<Show[]>([])
     const [displayedShowsCount, setDisplayedShowsCount] = useState(25)
     const [isLoadingMore, setIsLoadingMore] = useState(false)
+    const [searchLoading, setSearchLoading] = useState(false)
     const observerRef = useRef<HTMLDivElement>(null)
+
+    useEffect(() => {
+        const search = async () => {
+            if (!searchQuery.trim()) {
+                setIsSearching(false)
+                setSearchResults([])
+                setDisplayedShowsCount(25)
+                return
+            }
+
+            try {
+                setSearchLoading(true)
+                setIsSearching(true)
+                const results = await searchShows(searchQuery)
+                setSearchResults(results.map(result => result.show))
+            } catch (err) {
+                console.error('Failed to search shows:', err)
+            } finally {
+                setSearchLoading(false)
+            }
+        }
+
+        search()
+    }, [searchQuery])
 
     const {
         data,
@@ -21,7 +48,7 @@ export const ShowList = () => {
         error,
     } = useInfiniteQuery({
         queryKey: ['shows'],
-        queryFn: ({ pageParam = 0 }) => getShows(pageParam),
+        queryFn: ({ pageParam = 0 }) => getShows('', pageParam),
         getNextPageParam: (lastPage, allPages) => {
             if (lastPage.length === 0) return undefined
             return allPages.length
@@ -41,7 +68,7 @@ export const ShowList = () => {
         setTimeout(() => {
             setDisplayedShowsCount(prev => prev + 25)
             setIsLoadingMore(false)
-        }, 500) // Small delay to show loading state
+        }, 500)
     }
 
     useEffect(() => {
@@ -51,17 +78,15 @@ export const ShowList = () => {
             (entries) => {
                 if (entries[0].isIntersecting) {
                     if (allShows.length > displayedShowsCount) {
-                        // Handle local pagination
                         handleLoadMore()
                     } else if (hasNextPage && !isFetchingNextPage) {
-                        // Fetch new data from API
                         fetchNextPage()
                     }
                 }
             },
             { 
-                threshold: 0.1, // Reduced threshold to trigger earlier
-                rootMargin: '200px' // Increased margin to load earlier
+                threshold: 0.1,
+                rootMargin: '200px'
             }
         )
 
@@ -69,27 +94,9 @@ export const ShowList = () => {
         return () => observer.disconnect()
     }, [hasNextPage, isFetchingNextPage, fetchNextPage, isSearching, allShows.length, displayedShowsCount])
 
-    const handleSearch = async (query: string) => {
-        if (!query.trim()) {
-            setIsSearching(false)
-            setSearchResults([])
-            setDisplayedShowsCount(25)
-            return
-        }
-
-        try {
-            setIsSearching(true)
-            const results = await searchShows(query)
-            setSearchResults(results.map(result => result.show))
-        } catch (err) {
-            console.error('Failed to search shows:', err)
-        }
-    }
-
     const LoadingIndicator = () => (
-        <div className="text-center py-8 mt-4">
-            <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-blue-500 border-r-transparent"></div>
-            <p className="text-gray-600 mt-2">Loading more TV shows...</p>
+        <div className="col-span-4 p-4 text-center">
+            <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-[#3c948b] border-r-transparent"></div>
         </div>
     )
 
@@ -99,39 +106,46 @@ export const ShowList = () => {
         (hasNextPage && allShows.length > 0)
     )
 
-    return (
-        <div className="container mx-auto px-4 py-8">
-            <SearchBar onSearch={handleSearch} />
+    if (isLoading && !isSearching) {
+        return <div>Loading...</div>
+    }
 
-            {error instanceof Error && (
-                <div className="text-center text-red-500 py-4">{error.message}</div>
+    if (error instanceof Error) {
+        return <div>Error: {error.message}</div>
+    }
+
+    return (
+        <div className="field result">
+            {displayedShows.map((show) => (
+                <div key={show.id} className="result-item">
+                    <img
+                        src={show.image?.medium || 'https://static.tvmaze.com/images/no-img/no-img-portrait-clean.png'}
+                        alt={show.name}
+                        className="w-[200px] h-[250px] object-cover cursor-pointer"
+                    />
+                    <a className="title cursor-pointer block text-center mt-2">
+                        {show.name}
+                    </a>
+                </div>
+            ))}
+            
+            {shouldShowLoadingIndicator && <LoadingIndicator />}
+            
+            <div ref={observerRef} className="h-4" />
+
+            {!isLoading && !searchLoading && displayedShows.length === 0 && (
+                <div className="col-span-4 p-4 text-center">
+                    <p className="text-gray-600">
+                        {isSearching ? 'No shows found for your search' : 'No shows available'}
+                    </p>
+                </div>
             )}
 
-            {isLoading && !isSearching ? (
-                <div className="text-center py-8">
-                    <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-blue-500 border-r-transparent"></div>
-                    <p className="text-gray-600 mt-2">Loading shows...</p>
+            {searchLoading && (
+                <div className="col-span-4 p-4 text-center">
+                    <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-[#3c948b] border-r-transparent"></div>
+                    <p className="text-gray-600 mt-2">Searching...</p>
                 </div>
-            ) : (
-                <>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {displayedShows.map((show: Show) => (
-                            <ShowCard key={show.id} show={show} />
-                        ))}
-                    </div>
-                    
-                    {shouldShowLoadingIndicator && <LoadingIndicator />}
-                    
-                    <div ref={observerRef} className="h-4" />
-
-                    {!isLoading && displayedShows.length === 0 && (
-                        <div className="text-center py-4">
-                            <p className="text-gray-600">
-                                {isSearching ? 'No shows found for your search' : 'No shows available'}
-                            </p>
-                        </div>
-                    )}
-                </>
             )}
         </div>
     )

@@ -9,13 +9,19 @@ const apiClient = axios.create({
     headers: { 'Content-Type': 'application/json' }
 })
 
-export const getShows = async (page: number = 0): Promise<Show[]> => {
+export const getShows = async (query: string, page: number) => {
     try {
-        const response = await apiClient.get(`/shows?page=${page}`)
-        return response.data
+        if (query) {
+            const response = await fetch(`${BASE_URL}/search/shows?q=${encodeURIComponent(query)}`)
+            const data = await response.json()
+            return data.map((item: any) => item.show)
+        } else {
+            const response = await fetch(`${BASE_URL}/shows?page=${page}`)
+            return response.json()
+        }
     } catch (error) {
         console.error('Error fetching shows:', error)
-        throw new Error('Failed to fetch shows')
+        return []
     }
 }
 
