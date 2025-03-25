@@ -2,6 +2,8 @@
 
 A React application that uses the TVMaze API to browse and search TV shows.
 
+🔗 **[Live Demo](https://tvmaze-show-browser.netlify.app/)**
+
 ## Features
 
 - **Top Rated Shows**
@@ -17,7 +19,7 @@ A React application that uses the TVMaze API to browse and search TV shows.
 
 - **Show Grid**
   - Displays shows in a responsive 4-column grid
-  - Infinite scroll loading for more shows
+  - Infinite scroll with loading indicator for each 50 shows
   - Each show card includes:
     - Show poster
     - Title
