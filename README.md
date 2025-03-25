@@ -1,68 +1,44 @@
-# ShowSeeker
+# TVMaze Show Browser
 
-A modern TV show exploration app built with React, TypeScript, and Tailwind CSS. Browse, search, and discover TV shows using the TVMaze API.
+A React application that uses the TVMaze API to browse and search TV shows.
 
 ## Features
 
-- 📺 Browse TV shows with infinite scrolling
-- 🔍 Search functionality to find specific shows
-- 📱 Responsive design for all devices
-- 🎭 Detailed show information including ratings, genres, and summaries
-- ⚡ Fast and optimized performance with lazy loading
-- 🎨 Modern UI with Tailwind CSS
+- **Top Rated Shows**
+  - Displays shows with highest viewer ratings
+  - Netflix-style horizontal scrolling with hover effects
+  - Shows average rating for each show
+  - Navigation arrows for easy browsing
+
+- **Show Search**
+  - Search any TV show by name
+  - Real-time search results
+  - Shows display with their posters, ratings, and genres
+
+- **Show Grid**
+  - Displays shows in a responsive 4-column grid
+  - Infinite scroll loading for more shows
+  - Each show card includes:
+    - Show poster
+    - Title
+    - Rating
+    - Genres
+
+- **Show Details**
+  - Click any show to view detailed information
+  - Full show information including summary and cast
 
 ## Tech Stack
 
-- React 18
+- React
 - TypeScript
-- Tailwind CSS
-- Vite
-- React Router
-- Axios
+- TailwindCSS
+- React Query
+- TVMaze API
 
 ## Getting Started
 
-### Prerequisites
-
-- Node.js (v14 or higher)
-- npm or yarn
-
-### Installation
-
-1. Clone the repository:
-```bash
-git clone https://github.com/duong-28/tvshow_app.git
-cd tvshow_app
-```
-
-2. Install dependencies:
-```bash
-npm install
-```
-
-3. Start the development server:
-```bash
-npm run dev
-```
-
-The app will be available at `http://localhost:5173`
-
-### Building for Production
-
-To create a production build:
-
-```bash
-npm run build
-```
-
-## API
-
-This project uses the [TVMaze API](https://www.tvmaze.com/api) for fetching TV show data.
-
-## Contributing
-
-Contributions are welcome! Please feel free to submit a Pull Request.
-
-## License
-
-This project is open source and available under the [MIT License](LICENSE).
+1. Clone the repository
+2. Install dependencies: `npm install`
+3. Start the development server: `npm run dev`
+4. Open `http://localhost:5173` in your browser

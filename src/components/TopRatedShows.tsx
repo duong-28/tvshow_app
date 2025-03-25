@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { getLatestShows } from '../services/api';
+import { getTopRatedShows } from '../services/api';
 import { Link } from 'react-router-dom';
 import { Show } from '../types/show';
 
@@ -34,7 +34,7 @@ const ShowSection = ({ shows, sectionId, prevId, nextId }: {
             <div className="absolute bottom-0 p-4">
               <h3 className="text-white font-semibold">{show.name}</h3>
               <p className="text-teal-400 text-sm">
-                {show.premiered ? new Date(show.premiered).getFullYear() : 'TBA'}
+                Rating: {show.rating?.average || 'N/A'}
               </p>
             </div>
           </div>
@@ -51,17 +51,17 @@ const ShowSection = ({ shows, sectionId, prevId, nextId }: {
   </section>
 );
 
-export const LatestShows = () => {
-  const { data: latestShows, isLoading } = useQuery({
-    queryKey: ['latestShows'],
-    queryFn: getLatestShows,
+export const TopRatedShows = () => {
+  const { data: topRatedShows, isLoading } = useQuery({
+    queryKey: ['topRatedShows'],
+    queryFn: getTopRatedShows,
   });
 
   if (isLoading) {
     return (
       <div className="w-full bg-gray-900/30 py-8 mb-12">
         <div className="max-w-[1400px] mx-auto px-8">
-          <h2 className="text-2xl font-bold mb-6 text-teal-500">Latest Shows</h2>
+          <h2 className="text-2xl font-bold mb-6 text-teal-500">Top Rated Shows</h2>
           <div className="grid grid-cols-5 gap-4">
             {[...Array(5)].map((_, i) => (
               <div
@@ -75,16 +75,16 @@ export const LatestShows = () => {
     );
   }
 
-  if (!latestShows) return null;
+  if (!topRatedShows) return null;
 
-  const sections = Array.from({ length: Math.ceil(latestShows.length / 5) }, (_, i) =>
-    latestShows.slice(i * 5, (i + 1) * 5)
+  const sections = Array.from({ length: Math.ceil(topRatedShows.length / 5) }, (_, i) =>
+    topRatedShows.slice(i * 5, (i + 1) * 5)
   );
 
   return (
     <div className="w-full bg-gray-900/30 py-8 mb-12">
       <div className="max-w-[1400px] mx-auto px-8">
-        <h2 className="text-2xl font-bold mb-6 text-teal-500">Latest Shows</h2>
+        <h2 className="text-2xl font-bold mb-6 text-teal-500">Top Rated TV Shows</h2>
         <div className="wrapper grid grid-cols-[repeat(3,100%)] overflow-hidden scroll-smooth">
           {sections.map((sectionShows, index) => (
             <ShowSection

@@ -5,7 +5,7 @@ import { ShowDetail } from './components/ShowDetail'
 import { Logo } from './components/Logo'
 import { SearchBar } from './components/SearchBar'
 import { useState } from 'react'
-import { LatestShows } from './components/LatestShows'
+import { TopRatedShows } from './components/TopRatedShows'
 
 const queryClient = new QueryClient()
 
@@ -165,7 +165,7 @@ function App() {
                                 path="/"
                                 element={
                                     <>
-                                        <LatestShows />
+                                        <TopRatedShows />
                                         <ShowList searchQuery={searchQuery} />
                                     </>
                                 }
