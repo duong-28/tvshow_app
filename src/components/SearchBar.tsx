@@ -26,7 +26,7 @@ export const SearchBar = ({ onSearch }: SearchBarProps) => {
                     value={query}
                     onChange={(e) => setQuery(e.target.value)}
                     onKeyDown={handleKeyDown}
-                    placeholder="Search Shows and People..."
+                    placeholder="Search Shows and Movies..."
                     className="flex-1 text-base bg-[#2a2a2a] text-white border border-[#3c948b] rounded-l-[30px] p-[10px] h-[40px] focus:outline-none focus:border-[#1f5f58] transition-colors duration-300"
                 />
                 <button 

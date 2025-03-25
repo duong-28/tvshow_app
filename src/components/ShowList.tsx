@@ -2,6 +2,7 @@ import { useInfiniteQuery } from '@tanstack/react-query'
 import { useRef, useEffect, useState } from 'react'
 import { Show } from '../types/show'
 import { getShows, searchShows } from '../services/api'
+import { Link } from 'react-router-dom'
 
 interface ShowListProps {
     searchQuery: string;
@@ -10,7 +11,7 @@ interface ShowListProps {
 export const ShowList = ({ searchQuery }: ShowListProps) => {
     const [isSearching, setIsSearching] = useState(false)
     const [searchResults, setSearchResults] = useState<Show[]>([])
-    const [displayedShowsCount, setDisplayedShowsCount] = useState(25)
+    const [displayedShowsCount, setDisplayedShowsCount] = useState(50)
     const [isLoadingMore, setIsLoadingMore] = useState(false)
     const [searchLoading, setSearchLoading] = useState(false)
     const observerRef = useRef<HTMLDivElement>(null)
@@ -20,14 +21,14 @@ export const ShowList = ({ searchQuery }: ShowListProps) => {
             if (!searchQuery.trim()) {
                 setIsSearching(false)
                 setSearchResults([])
-                setDisplayedShowsCount(25)
+                setDisplayedShowsCount(50)
                 return
             }
 
             try {
                 setSearchLoading(true)
                 setIsSearching(true)
-                const results = await searchShows(searchQuery)
+                const results = await searchShows(searchQuery.trim())
                 setSearchResults(results.map(result => result.show))
             } catch (err) {
                 console.error('Failed to search shows:', err)
@@ -66,7 +67,7 @@ export const ShowList = ({ searchQuery }: ShowListProps) => {
     const handleLoadMore = () => {
         setIsLoadingMore(true)
         setTimeout(() => {
-            setDisplayedShowsCount(prev => prev + 25)
+            setDisplayedShowsCount(prev => prev + 50)
             setIsLoadingMore(false)
         }, 500)
     }
@@ -117,16 +118,39 @@ export const ShowList = ({ searchQuery }: ShowListProps) => {
     return (
         <div className="field result">
             {displayedShows.map((show) => (
-                <div key={show.id} className="result-item">
+                <Link 
+                    to={`/show/${show.id}`}
+                    key={show.id} 
+                    className="result-item"
+                    aria-label={`View details for ${show.name}`}
+                >
                     <img
-                        src={show.image?.medium || 'https://static.tvmaze.com/images/no-img/no-img-portrait-clean.png'}
+                        src={show.image?.original || 'https://static.tvmaze.com/images/no-img/no-img-portrait-clean.png'}
                         alt={show.name}
-                        className="w-[200px] h-[250px] object-cover cursor-pointer"
+                        className="w-full object-cover"
+                        loading="lazy"
                     />
-                    <a className="title cursor-pointer block text-center mt-2">
-                        {show.name}
-                    </a>
-                </div>
+                    <div className="content">
+                        <h2 className="title">
+                            {show.name}
+                        </h2>
+                        {show.rating?.average && (
+                            <div className="rating">
+                                <span className="star">★</span>
+                                <span>{show.rating.average.toFixed(1)}</span>
+                            </div>
+                        )}
+                        {show.genres && show.genres.length > 0 && (
+                            <div className="genres">
+                                {show.genres.slice(0, 3).map((genre: string) => (
+                                    <span key={genre} className="genre">
+                                        {genre}
+                                    </span>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                </Link>
             ))}
             
             {shouldShowLoadingIndicator && <LoadingIndicator />}
