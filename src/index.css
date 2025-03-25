@@ -2,6 +2,43 @@
 @tailwind components;
 @tailwind utilities;
 
+html {
+  scroll-behavior: smooth;
+}
+
+/* Netflix-style hover effect */
+.item {
+  position: relative;
+  transition: all 200ms ease-out;
+  transform-origin: center center;
+}
+
+.item:hover {
+  transform: scale(1.1) translateX(5%);
+  z-index: 100;
+}
+
+.item:hover ~ .item {
+  transform: translateX(15%);
+}
+
+/* Hide scrollbar for the wrapper */
+.wrapper {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.wrapper::-webkit-scrollbar {
+  display: none;
+}
+
+/* Hide arrows on mobile */
+@media only screen and (max-width: 600px) {
+  .arrow__btn {
+    display: none;
+  }
+}
+
 :root {
   font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;

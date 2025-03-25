@@ -5,6 +5,7 @@ import { ShowDetail } from './components/ShowDetail'
 import { Logo } from './components/Logo'
 import { SearchBar } from './components/SearchBar'
 import { useState } from 'react'
+import { LatestShows } from './components/LatestShows'
 
 const queryClient = new QueryClient()
 
@@ -160,7 +161,15 @@ function App() {
                     </header>
                     <main>
                         <Routes>
-                            <Route path="/" element={<ShowList searchQuery={searchQuery} />} />
+                            <Route
+                                path="/"
+                                element={
+                                    <>
+                                        <LatestShows />
+                                        <ShowList searchQuery={searchQuery} />
+                                    </>
+                                }
+                            />
                             <Route path="/show/:id" element={<ShowDetail />} />
                         </Routes>
                     </main>

@@ -44,3 +44,34 @@ export const searchShows = async (query: string): Promise<ShowSearchResult[]> =>
         throw new Error('Failed to search for shows')
     }
 }
+
+export const getLatestShows = async (): Promise<Show[]> => {
+    try {
+        // Get both web and TV schedules for more comprehensive latest shows
+        const [webResponse, tvResponse] = await Promise.all([
+            fetch(`${BASE_URL}/schedule/web`),
+            fetch(`${BASE_URL}/schedule`)
+        ]);
+
+        const webShows = await webResponse.json();
+        const tvShows = await tvResponse.json();
+
+        // Combine both schedules and extract unique shows
+        const allScheduledShows = [...webShows, ...tvShows];
+        const uniqueShows = new Map();
+
+        // Keep only unique shows, using the most recent airing
+        allScheduledShows.forEach(schedule => {
+            const show = schedule._embedded?.show || schedule.show;
+            if (show) {
+                uniqueShows.set(show.id, show);
+            }
+        });
+
+        // Convert to array and take first 10
+        return Array.from(uniqueShows.values()).slice(0, 10);
+    } catch (error) {
+        console.error('Error fetching latest shows:', error);
+        throw new Error('Failed to fetch latest shows');
+    }
+};
