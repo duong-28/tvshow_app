@@ -1,24 +1,27 @@
 # TVMaze Show Browser
 
-A React application that uses the TVMaze API to browse and search TV shows.
+A React app that uses the TVMaze API to browse and search TV shows.
 
 🔗 **[Live Demo](https://tvmaze-show-browser.netlify.app/)**
 
-## Features
+- **TVMaze API Integration**
+  - Fetches TV show data from TVMaze API
+  - Real-time data updates and accurate show information
+  - Efficient API usage with React Query for caching and state management
 
-- **Top Rated Shows**
-  - Displays shows with highest viewer ratings
-  - Netflix-style horizontal scrolling with hover effects
-  - Shows average rating for each show
-  - Navigation arrows for easy browsing
+- **Show List & Detail Pages**
+  - Responsive grid layout for browsing shows
+  - Detailed show pages with comprehensive information
+  - Clean and intuitive navigation between views
+  - Display of key show information including ratings, genres, and descriptions
 
-- **Show Search**
-  - Search any TV show by name
-  - Real-time search results
-  - Shows display with their posters, ratings, and genres
+- **Search Functionality**
+  - Real-time search
+  - Instant results with loading states
+  - Search across show titles and descriptions
+  - Clear visual feedback for search results
 
 - **Show Grid**
-  - Displays shows in a responsive 4-column grid
   - Infinite scroll with loading indicator for each 50 shows
   - Each show card includes:
     - Show poster
@@ -26,17 +29,40 @@ A React application that uses the TVMaze API to browse and search TV shows.
     - Rating
     - Genres
 
-- **Show Details**
-  - Click any show to view detailed information
-  - Full show information including summary and cast
+## Additional Features
+
+- **Modern UI/UX**
+  - Netflix-inspired hover effects
+  - Smooth transitions and animations
+  - Responsive design for all devices
+  - Dark theme optimized for TV show browsing
+
+- **Enhanced Navigation**
+  - Intuitive routing with React Router
+  - Back button support
+  - Clean URL structure
+  - Smooth page transitions
+
+- **Performance Optimizations**
+  - Image lazy loading
+  - Efficient state management
+  - Optimized re-renders
+  - Smooth scrolling experience
+
+- **Developer Experience**
+  - TypeScript for type safety
+  - Tailwind CSS for styling
+  - Clean code architecture
+  - Easy to maintain and extend
 
 ## Tech Stack
 
-- React
-- TypeScript
-- TailwindCSS
-- React Query
-- TVMaze API
+- **Frontend Framework**: React with TypeScript
+- **Styling**: Tailwind CSS
+- **State Management**: React Query
+- **Routing**: React Router
+- **API**: TVMaze API
+- **Build Tool**: Vite
 
 ## Getting Started
 

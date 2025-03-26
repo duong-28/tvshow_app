@@ -47,7 +47,7 @@ export const TopRatedShows = () => {
   return (
     <div className="w-full bg-gray-900/30 py-4 md:py-8 mb-8 md:mb-12">
       <div className="max-w-[1400px] mx-auto px-4 md:px-8">
-        <h2 className="text-xl md:text-2xl font-bold mb-4 md:mb-6 text-teal-500">Top Rated TV Shows</h2>
+        <h2 className="text-xl md:text-2xl font-bold mb-4 md:mb-6 text-teal-500">Top 10 Rated TV Shows</h2>
         <div className="relative">
           <div 
             ref={scrollContainerRef}
