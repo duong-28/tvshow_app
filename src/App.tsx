@@ -165,7 +165,7 @@ function App() {
                                 path="/"
                                 element={
                                     <>
-                                        <TopRatedShows />
+                                        {!searchQuery && <TopRatedShows />}
                                         <ShowList searchQuery={searchQuery} />
                                     </>
                                 }

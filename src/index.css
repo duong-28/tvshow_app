@@ -2,33 +2,31 @@
 @tailwind components;
 @tailwind utilities;
 
-html {
-  scroll-behavior: smooth;
+@layer components {
+  .netflix-row {
+    @apply flex gap-6 overflow-x-auto scrollbar-none touch-pan-x py-8 px-24;
+  }
+
+  .netflix-item {
+    @apply relative transition-all duration-200 ease-out origin-center z-10;
+  }
+
+  .netflix-item:hover {
+    @apply scale-110 translate-x-[5%] z-50;
+  }
+
+  .netflix-item:hover ~ .netflix-item {
+    @apply translate-x-[15%];
+  }
 }
 
-/* Netflix-style hover effect */
-.item {
-  position: relative;
-  transition: all 200ms ease-out;
-  transform-origin: center center;
-}
-
-.item:hover {
-  transform: scale(1.1) translateX(5%);
-  z-index: 100;
-}
-
-.item:hover ~ .item {
-  transform: translateX(15%);
-}
-
-/* Hide scrollbar for the wrapper */
-.wrapper {
+/* Hide scrollbar */
+.scrollbar-none {
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
 
-.wrapper::-webkit-scrollbar {
+.scrollbar-none::-webkit-scrollbar {
   display: none;
 }
 
